@@ -39,13 +39,6 @@ function dot(a) {
 
 const svg = document.getElementById('circle');
 
-// svg.appendChild(arrow_line({x: -.30, y: -.80}, {x: .90, y: .50}));
-// svg.appendChild(dot(-30,-80));
-
-// const a = {x: .34, y: -.18};
-// const b = {x : 1.4, y: 4.1};
-// console.log(add(mul({x:-1,y:0}, a), mul(div(a,b),b)));
-
 const unit = 100;
 const a = {x: 0, y: -0.05};
 
@@ -59,25 +52,4 @@ for (let cnt = 0; cnt < 1000; cnt ++) {
   const z = {x : 1 - 2 *Math.random(), y : 1 - 2 *Math.random()};
   if (z.x * z.x + z.y * z.y > 1) continue;
   svg.appendChild(arrow_line(z, func(z)));
-}
-
-function add(a, b) {
-  return {x: a.x + b.x, y: a.y + b.y};
-}
-
-function sub(a, b) {
-  return {x: a.x - b.x, y: a.y - b.y};
-}
-
-function mul(a, b) {
-  return {x: a.x * b.x - a.y * b.y, y: a.x * b.y + a.y * b.x};
-}
-
-function div(a, b) {
-  const m = b.x * b.x + b.y * b.y;
-  return {x: (a.x * b.x + a.y * b.y)/m, y: (a.y * b.x - a.x * b.y)/m};
-}
-
-function conj(a) {
-  return {x: a.x, y: -a.y};
 }
