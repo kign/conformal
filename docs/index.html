@@ -2,16 +2,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Conform map</title>
+    <title>Conformal maps</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+    </script>
+<style>
+tr td:nth-child(1) {
+    width: 140px;
+}
+td {
+    padding: 8px;
+}
+tr {
+    border: 1px solid black;
+    cursor: pointer;
+}
+tr:hover {
+    background-color: aliceblue;
+}
+table {
+    border-collapse: collapse;
+}
+</style>
 </head>
 <body>
-<svg id="z" height="500" viewBox="-110 -110 220 220">
-    <circle r="100" cx="0" cy="0" fill="none" stroke="black" stroke-width="1"/>
-</svg>
-<svg id="w" height="500" viewBox="-110 -110 220 220">
-    <circle r="100" cx="0" cy="0" fill="none" stroke="black" stroke-width="1"/>
-    <g id="w-g"></g>
-</svg>
-<script src="meshes.js"></script>
+<table>
+    <tr data-href="linear-fractional.html">
+        <td>Linear Fractional</td>
+        <td>$$w = \frac{z - a}{1 - \bar{a}z}$$</td>
+    </tr>
+    <tr data-href="poly.html">
+        <td>Polynomial</td>
+        <td>$$w = z^n$$</td>
+    </tr>
+</table>
+<script>
+    for (const elm of document.querySelectorAll('table tr')) {
+      elm.addEventListener('click', () => window.location.href=elm.dataset.href);
+    }
+</script>
 </body>
 </html>
