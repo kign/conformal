@@ -1,7 +1,9 @@
+const scale = 1;
+
 draw_mesh (true);
 draw_mesh(false, {x: 0, y: 0});
-dot('w', {x: 0, y: 0}, 'green');
-dot('z', {x: 0, y: 0}, 'green');
+dot('w', 1, {x: 0, y: 0}, 'green');
+dot('z', 1, {x: 0, y: 0}, 'green');
 setup_callbacks();
 
 function setup_callbacks () {
@@ -10,7 +12,7 @@ function setup_callbacks () {
   let t = {x : 0, y : 0};
   let pt = {x: 0, y: 0};
   let target = null;
-  const u = 100;
+  const u = 100 / scale;
   svg_z.addEventListener('pointerdown',   evt => {
     if (evt.target.tagName === 'circle' && !target) {
       start = {x: evt.clientX, y: evt.clientY};
@@ -67,34 +69,32 @@ function draw_mesh(is_orig, a) {
     const y = -1 + 2*iy/N;
     const x = Math.sqrt(1 - y * y);
     if (is_orig)
-      line({x: -x, y: y}, {x: x, y: y}, "blue");
+      line('z', {x: -x, y: y}, {x: x, y: y}, scale, "blue");
     else
-      curve("w-g",t => {
-          const z = {x: x*(2*t-1), y:y};
-          return func(z);
-        }, t => {
-          const z = {x: x*(2*t-1), y:y};
-          const d = derivative(z);
-          return mul(d, {x: 2*x, y: 0});
-        },
-        "blue");
+      curve("w-g", scale, t => {
+        const z = {x: x * (2 * t - 1), y: y};
+        return func(z);
+      }, t => {
+        const z = {x: x * (2 * t - 1), y: y};
+        const d = derivative(z);
+        return mul(d, {x: 2 * x, y: 0});
+      }, "blue");
   }
 
   for (let ix = 1; ix < N; ix ++) {
     const x = -1 + 2*ix/N;
     const y = Math.sqrt(1 - x * x);
     if (is_orig)
-      line({x: x, y: -y}, {x: x, y: y}, "red");
+      line('z', {x: x, y: -y}, {x: x, y: y}, scale, "red");
     else
-      curve("w-g", t => {
-          const z = {x: x, y: y*(2*t-1)};
-          return func(z);
-        }, t => {
-          const z = {x: x, y: y*(2*t-1)};
-          const d = derivative(z);
-          return mul(d, {x: 0, y: 2*y});
-        },
-        "red");
+      curve("w-g", scale, t => {
+        const z = {x: x, y: y * (2 * t - 1)};
+        return func(z);
+      }, t => {
+        const z = {x: x, y: y * (2 * t - 1)};
+        const d = derivative(z);
+        return mul(d, {x: 0, y: 2 * y});
+      }, "red");
   }
 }
 

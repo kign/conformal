@@ -1,9 +1,7 @@
-const svg_scale = 100;
-
-function curve(id, fn, df, color) {
+function curve(id, scale, fn, df, color) {
   const svg = document.getElementById(id);
   const N = 50;
-  const u = svg_scale;
+  const u = 100 / scale;
   const show_points = false;
   const def = [];
   let p1 = null;
@@ -47,10 +45,9 @@ function curve(id, fn, df, color) {
   svg.appendChild(path);
 }
 
-
-function line(a, b, color) {
-  const u = svg_scale;
-  const svg = document.getElementById('z');
+function line(svg_id, a, b, scale, color, dash = null) {
+  const u = 100 / scale;
+  const svg = document.getElementById(svg_id);
   const line = document.createElementNS("http://www.w3.org/2000/svg", 'line');
   line.setAttribute('x1', (u * a.x).toString());
   line.setAttribute('y1', (u * a.y).toString());
@@ -60,12 +57,24 @@ function line(a, b, color) {
 
   line.setAttribute('stroke', color);
   line.setAttribute('stroke-width', '1');
+  if(dash)
+    line.setAttribute('stroke-dasharray', dash);
 
   svg.appendChild(line);
 }
 
-function dot(id, a, color) {
-  const u = svg_scale;
+function text (svg_id, scale, pos, str) {
+  const u = 100 / scale;
+  const svg = document.getElementById(svg_id);
+  const text = document.createElementNS("http://www.w3.org/2000/svg", 'text');
+  text.setAttribute('x', (u * pos.x).toString());
+  text.setAttribute('y', (u * pos.y).toString());
+  text.appendChild(document.createTextNode(str));
+  svg.appendChild(text);
+}
+
+function dot(id, scale, a, color) {
+  const u = 100 / scale;
   const svg = document.getElementById(id);
 
   const circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
@@ -74,6 +83,69 @@ function dot(id, a, color) {
   circle.setAttribute('r', '5');
   circle.setAttribute('fill', color);
   svg.appendChild(circle);
+}
+
+function straight_mesh(svg_id, scale) {
+  const N = 20;
+
+  for (let iy = 1; iy < N; iy ++) {
+    const y = -1 + 2*iy/N;
+    const x = Math.sqrt(1 - y * y);
+    line(svg_id, {x: -x, y: y}, {x: x, y: y}, scale, "blue");
+  }
+
+  for (let ix = 1; ix < N; ix ++) {
+    const x = -1 + 2*ix/N;
+    const y = Math.sqrt(1 - x * x);
+    line(svg_id, {x: x, y: -y}, {x: x, y: y}, scale, "red");
+  }
+}
+
+function mesh_circle(svg_id, scale, r, c, func, derivative) {
+  const N = 20;
+
+  for (let iy = 1; iy < N; iy ++) {
+    // const y = -1 + 2*iy/N;
+    // const x = Math.sqrt(1 - y * y);
+    const y = c.y - r + 2*r*iy/N;
+    const dx = 2*r*Math.sqrt(iy/N - (iy/N)**2);
+    curve(svg_id, scale, t => {
+      // const z = {x: x * (2 * t - 1), y: y};
+      const z = {x: c.x + dx * (2 * t - 1), y: y};
+      return func(z);
+    }, t => {
+      // const z = {x: x * (2 * t - 1), y: y};
+      const z = {x: c.x + dx * (2 * t - 1), y: y};
+      return mul_s(2*dx, derivative(z));
+    }, "blue");
+  }
+
+  for (let ix = 1; ix < N; ix ++) {
+    // const x = -1 + 2*ix/N;
+    // const y = Math.sqrt(1 - x * x);
+    const x = c.x - r + 2*r*ix/N;
+    const dy = 2*r*Math.sqrt(ix/N - (ix/N)**2);
+    curve(svg_id, scale, t => {
+      // const z = {x: x, y: y * (2 * t - 1)};
+      const z = {x: x, y: c.y + dy * (2 * t - 1)};
+      return func(z);
+    }, t => {
+      // const z = {x: x, y: y * (2 * t - 1)};
+      const z = {x: x, y: c.y + dy * (2 * t - 1)};
+      return mul(derivative(z), {x: 0, y: 2 * dy});
+    }, "red");
+  }
+}
+
+function unit_circle(svg_id, scale, c, r, func, derivative) {
+  const k = mul_s(2*Math.PI, J);
+  curve(svg_id, scale, t => {
+    const z = mul_s(r, exp(mul_s(t, k)));
+    return func(add(c, z));
+  }, t => {
+    const z = mul_s(r, exp(mul_s(t, k)));
+    return mul(mul(k, z), derivative(add(c, z)));
+  }, "green");
 }
 
 function add(a, b) {
@@ -86,6 +158,10 @@ function sub(a, b) {
 
 function mul(a, b) {
   return {x: a.x * b.x - a.y * b.y, y: a.x * b.y + a.y * b.x};
+}
+
+function mul_s(scalar, z) {
+  return {x: scalar * z.x, y: scalar * z.y};
 }
 
 function div(a, b) {
@@ -111,4 +187,10 @@ function to_n(z, n) {
     return div({x: 1, y : 0}, to_n_pos(z, -n));
   else
     return to_n_pos(z, n);
+}
+
+const J = {x: 0, y: 1};
+
+function exp(z) {
+  return mul_s(Math.exp(z.x), {x: Math.cos(z.y), y: Math.sin(z.y)});
 }

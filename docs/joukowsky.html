@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Joukowsky transform</title>
+</head>
+<body>
+<svg id="z" height="500" viewBox="-110 -110 220 220">
+    <style>
+        text { font: 8px serif; }
+    </style>
+    <g id="z-circle">
+        <circle r="50" cx="0" cy="0" fill="none" stroke="black" stroke-width="1"/>
+        <g id="z-mesh" style="visibility: hidden;"></g>
+    </g>
+</svg>
+<svg id="w" height="500" viewBox="-110 -110 220 220">
+    <g id="w-main"></g>
+</svg>
+<div style="margin-top: 20px;">
+    <input id="mesh" type="checkbox">
+    <label for="mesh">Include mesh</label>
+</div>
+<script src="lib.js"></script>
+<script src="joukowsky.js"></script>
+</body>
+</html>
