@@ -1,20 +1,32 @@
-/*const g = 0.25;
 
-const a = {x: g, y : g};
-const r2 = 1 + 2*g + 2*g*g-0.2;
 
-const func = z => add(z, div({x:r2,y:0}, sub(z,a)));
-const derivative = z => sub({x:1,y:0}, div({x:r2,y:0}, mul(sub(z,a),sub(z,a))));
+let power_n = parseInt(document.getElementById('power_n').value);
+// console.log("power_n =", power_n);
 
-mesh_circle("w", func, derivative);
+const Gamma = z => {
+  const g = math.gamma(math.complex(z.x, z.y));
+  if (g.re === undefined)
+    return {x: g, y:0};
+  return {x: g.re, y: g.im};
+}
 
-unit_circle("w", func, derivative);*/
+const fRef = {
+  joukowsky: z => [add(z, div(One, z)), sub(One, div(One, mul(z,z)))],
+  power: z => [to_n(z, power_n), mul_s(power_n, to_n(z, power_n - 1))],
+  gamma: z => {
+    const e = 0.01;
+    const gz = Gamma(z);
+    const gz1 = Gamma({x: z.x + e, y: z.y});
+    return [gz, mul_s(1/e, sub(gz1, gz))];
+  }
+};
+
+let name = document.querySelector('table.sel-func input[name="func"][checked="checked"]').id;
 
 const scale = 2;
 const font_size = 8;
 const One = {x:1,y:0};
-const func = z => add(z, div(One, z));
-const derivative = z => sub(One, div(One, mul(z,z)));
+
 const mesh_cb = document.getElementById('mesh');
 const w_main = document.getElementById('w-main');
 
@@ -28,7 +40,6 @@ setup_callbacks();
 function setup_callbacks () {
   const svg = document.getElementById('z');
   const g = document.getElementById("z-circle");
-  const u = 100 / scale;
   let mode = null; // 'move', 'zoom'
   let r = 1;
 
@@ -45,15 +56,36 @@ function setup_callbacks () {
   };
 
   const redraw = () => {
-    unit_circle('w-main', scale, trf2geom(t), r, func, derivative);
+    const f = z => fRef[name](z)[0];
+    const d = z => fRef[name](z)[1];
+
+    unit_circle('w-main', scale, trf2geom(t), r, f, d);
     if (mesh_cb.checked)
-      mesh_circle('w-main', scale, r, trf2geom(t), func, derivative);
+      mesh_circle('w-main', scale, r, trf2geom(t), f, d);
   }
 
   mesh_cb.addEventListener('change', () => {
     document.getElementById('z-mesh').style.visibility = mesh_cb.checked? 'visible' : 'hidden';
     w_main.innerHTML = '';
     redraw();
+  });
+
+  for (const func_rb of document.querySelectorAll('table.sel-func input[name="func"]'))
+    func_rb.addEventListener('change', function () {
+      if (this.checked) {
+        // console.log(this.id, this.checked);
+        w_main.innerHTML = '';
+        name = this.id;
+        redraw();
+      }
+    });
+
+  document.getElementById('power_n').addEventListener('change', function () {
+    power_n = parseInt(this.value);
+    if (name === "power") {
+      w_main.innerHTML = '';
+      redraw();
+    }
   });
 
   svg.addEventListener('pointerdown',   evt => {
